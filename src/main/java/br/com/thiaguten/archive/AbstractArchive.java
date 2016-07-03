@@ -72,7 +72,7 @@ public abstract class AbstractArchive implements Archive {
      * Archive actions
      */
     public enum ArchiverAction {
-        COMPRESS, DECOMPRESS;
+        COMPRESS, DECOMPRESS
     }
 
     @Override
