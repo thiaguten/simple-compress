@@ -8,6 +8,7 @@
     <artifactId>simple-compress</artifactId>
     <version>1.0.0-SNAPSHOT</version>
 
+    <name>${project.artifactId}</name>
     <description>Simple .tar, .zip, .tgz compress implementation</description>
 
     <inceptionYear>2016</inceptionYear>
@@ -18,6 +19,31 @@
             <url>https://opensource.org/licenses/BSD-3-Clause</url>
         </license>
     </licenses>
+
+    <developers>
+        <developer>
+            <name>Thiago Gutenberg Carvalho da Costa</name>
+            <email>thiaguten@gmail.com</email>
+            <url>http://www.thiaguten.com.br</url>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>America/Sao_Paulo</timezone>
+        </developer>
+    </developers>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://github.com/thiaguten/simple-compress/issues</url>
+    </issueManagement>
+
+    <scm>
+        <connection>scm:git:git@github.com:thiaguten/simple-compress.git</connection>
+        <developerConnection>scm:git:git@github.com:thiaguten/simple-compress.git</developerConnection>
+        <url>git@github.com:thiaguten/simple-compress.git</url>
+        <tag>HEAD</tag>
+    </scm>
 
     <dependencies>
         <dependency>
@@ -62,6 +88,82 @@
                     <source>1.7</source>
                     <target>1.7</target>
                 </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>2.4</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>jar-no-fork</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>2.10.3</version>
+                <configuration>
+                    <show>public</show>
+                    <maxmemory>1024m</maxmemory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <tagNameFormat>SimpleCompress-@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <excludes>
+                        <exclude>**/logback.xml</exclude>
+                        <exclude>**/log4j.properties</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+                    <verbose>false</verbose>
+                    <addSvnKeyWords>true</addSvnKeyWords>
+                    <organizationName>Thiago Gutenberg Carvalho da Costa.</organizationName>
+                    <descriptionTemplate>${project.basedir}/src/license/header.ftl</descriptionTemplate>
+                    <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
+                    <licenseName>bsd_3</licenseName>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>update-file-header</id>
+                        <goals>
+                            <goal>update-file-header</goal>
+                        </goals>
+                        <phase>process-sources</phase>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*.xml</exclude>
+                                <exclude>**/*.xsd</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <groupId>org.jacoco</groupId>
