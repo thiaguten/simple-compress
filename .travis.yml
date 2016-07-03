@@ -1,7 +1,17 @@
 language: java
 sudo: false
+cache:
+  directories:
+    - $HOME/.m2/repository
 jdk:
   - oraclejdk8
   - oraclejdk7
+install: /bin/true
+script:
+  - mvn install -Dskip.unit.tests=true -Dmaven.javadoc.skip=true -V -B
+  - jdk_switcher use openjdk7
+  - mvn test
 notifications:
   email: false
+after_success:
+  - mvn clean test jacoco:report coveralls:report
