@@ -1,0 +1,23 @@
+apply plugin: "java"
+apply plugin: "idea"
+
+sourceCompatibility = 1.7
+version = "1.0.0-SNAPSHOT"
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.14'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile "org.apache.commons:commons-compress:1.1+"
+    compile "org.apache.tika:tika-core:1.1+"
+    compile "org.slf4j:slf4j-api:1.7.+"
+    runtime("ch.qos.logback:logback-classic:1.1.+") {
+        exclude module: "slf4j-api"
+    }
+    testCompile "junit:junit:4.+"
+}
