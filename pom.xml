@@ -15,13 +15,20 @@
 
     <licenses>
         <license>
-            <name>BSD 3-Clause License</name>
-            <url>https://opensource.org/licenses/BSD-3-Clause</url>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
         </license>
     </licenses>
 
+    <organization>
+        <name>Thiago Gutenberg Carvalho da Costa</name>
+        <url>http://www.thiaguten.com.br</url>
+    </organization>
+
     <developers>
         <developer>
+            <id>thiaguten</id>
             <name>Thiago Gutenberg Carvalho da Costa</name>
             <email>thiaguten@gmail.com</email>
             <url>http://www.thiaguten.com.br</url>
@@ -140,23 +147,21 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.8</version>
+                <version>1.9</version>
                 <configuration>
                     <verbose>false</verbose>
-                    <addSvnKeyWords>true</addSvnKeyWords>
-                    <organizationName>Thiago Gutenberg Carvalho da Costa.</organizationName>
-                    <descriptionTemplate>${project.basedir}/src/license/header.ftl</descriptionTemplate>
+                    <addSvnKeyWords>false</addSvnKeyWords>
                     <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
-                    <licenseName>bsd_3</licenseName>
                 </configuration>
                 <executions>
                     <execution>
-                        <id>update-file-header</id>
+                        <id>first</id>
                         <goals>
                             <goal>update-file-header</goal>
                         </goals>
                         <phase>process-sources</phase>
                         <configuration>
+                            <licenseName>apache_v2</licenseName>
                             <excludes>
                                 <exclude>**/*.xml</exclude>
                                 <exclude>**/*.xsd</exclude>
