@@ -78,8 +78,9 @@ public class ZipArchive extends AbstractArchive implements Archive {
         return new ZipArchiveOutputStream(bufferedOutputStream);
     }
 
-    // for some internal optimizations should use the constructor that accepts a File argument
     protected ArchiveOutputStream createArchiveOutputStream(Path path) throws IOException {
+        // for some internal optimizations should use
+        // the constructor that accepts a File argument
         return new ZipArchiveOutputStream(path.toFile());
     }
 

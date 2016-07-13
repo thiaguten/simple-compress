@@ -19,11 +19,18 @@
  */
 package br.com.thiaguten.archive;
 
+import org.apache.commons.compress.archivers.ArchiveEntry;
+import org.apache.commons.compress.archivers.ArchiveInputStream;
+import org.apache.commons.compress.archivers.ArchiveOutputStream;
+import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -75,6 +82,19 @@ public class ArchiveTest {
         Path compress1 = ArchiveType.ZIP.getStrategy().compress(path);
         compress.toFile().deleteOnExit();
         compress1.toFile().deleteOnExit();
+    }
+
+    @Test
+    public void zipAbstractArchiveCompressDecompress() throws IOException {
+        Archive archive = new ZipArchive2();
+        Path compress = archive.compress(Paths.get("src/test/resources/data/dir/test.txt"));
+        assertTrue(exists(compress));
+        assertEquals(archive.getMimeType(), ArchiveType.of(compress).getMimeType());
+        compress.toFile().deleteOnExit();
+
+        Path decompress = archive.decompress(compress);
+        assertTrue(exists(decompress));
+        deleteFolder(decompress, true);
     }
 
     private void compressAndDecompressDirectory(ArchiveType type) throws IOException {
@@ -129,4 +149,54 @@ public class ArchiveTest {
         }
         return Collections.unmodifiableList(children);
     }
+
+    class ZipArchive2 extends AbstractArchive implements Archive {
+
+        private ZipArchive zipArchive = new ZipArchive();
+
+        @Override
+        public String getMimeType() {
+            return zipArchive.getMimeType();
+        }
+
+        @Override
+        public String getExtension() {
+            return zipArchive.getExtension();
+        }
+
+        @Override
+        protected ArchiveEntry createArchiveEntry(String targetPath, long targetSize, byte[] targetBytes) {
+            return zipArchive.createArchiveEntry(targetPath, targetSize, targetBytes);
+        }
+
+        @Override
+        protected ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) {
+            return zipArchive.createArchiveOutputStream(bufferedOutputStream);
+        }
+
+        @Override
+        protected ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException {
+            return zipArchive.createArchiveInputStream(bufferedInputStream);
+        }
+
+        @Override
+        protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
+//            try (InputStream inputStream = newInputStream(file)) {
+                final long size = size(file);
+                final byte[] content = new byte[(int) size];
+                final String relativePath = root.relativize(file).toString();
+
+                logger.debug("writting " + relativePath + " path in the archive output stream");
+
+                ArchiveEntry entry = createArchiveEntry(relativePath, size, content);
+                archiveOutputStream.putArchiveEntry(entry);
+                // For ZipArchive... this line causes java.io.IOException:
+                // "This archives contains unclosed entries" in the method ZipArchiveOutputStream#finish
+//                IOUtils.copy(inputStream, archiveOutputStream);
+                archiveOutputStream.write(content);
+                archiveOutputStream.closeArchiveEntry();
+//            }
+        }
+    }
+
 }
