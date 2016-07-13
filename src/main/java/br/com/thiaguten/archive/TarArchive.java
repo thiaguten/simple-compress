@@ -48,9 +48,9 @@ public class TarArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveEntry createArchiveEntry(String targetPath, long targetSize, byte[] targetBytes) {
-        TarArchiveEntry tarEntry = new TarArchiveEntry(targetPath);
-        tarEntry.setSize(targetSize);
+    protected ArchiveEntry createArchiveEntry(String path, long size, byte[] content) {
+        TarArchiveEntry tarEntry = new TarArchiveEntry(path);
+        tarEntry.setSize(size);
         return tarEntry;
     }
 

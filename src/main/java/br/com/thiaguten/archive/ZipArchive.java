@@ -33,8 +33,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.zip.CRC32;
 import java.util.zip.ZipEntry;
+
+import static br.com.thiaguten.archive.utils.CRC32Utils.crc32Checksum;
+import static br.com.thiaguten.archive.utils.FileUtils.removeExtension;
+import static java.nio.file.Files.size;
 
 /**
  * Zip Archive Implementation.
@@ -42,15 +45,6 @@ import java.util.zip.ZipEntry;
  * @author Thiago Gutenberg Carvalho da Costa
  */
 public class ZipArchive extends AbstractArchive implements Archive {
-
-    private CRC32 crc32 = new CRC32();
-
-    private long crc32Checksum(byte[] bytes) {
-        crc32.update(bytes);
-        long checksum = crc32.getValue();
-        crc32.reset();
-        return checksum;
-    }
 
     @Override
     public String getMimeType() {
@@ -63,13 +57,11 @@ public class ZipArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveEntry createArchiveEntry(String targetPath, long targetSize, byte[] targetBytes) {
-        ZipArchiveEntry zipEntry = new ZipArchiveEntry(targetPath);
-        zipEntry.setSize(targetSize);
+    protected ArchiveEntry createArchiveEntry(String path, long size, byte[] content) {
+        ZipArchiveEntry zipEntry = new ZipArchiveEntry(path);
+        zipEntry.setSize(size);
         zipEntry.setMethod(ZipEntry.STORED);
-        if (targetBytes != null) {
-            zipEntry.setCrc(crc32Checksum(targetBytes));
-        }
+        zipEntry.setCrc(crc32Checksum(content));
         return zipEntry;
     }
 
@@ -89,6 +81,10 @@ public class ZipArchive extends AbstractArchive implements Archive {
         return new ZipArchiveInputStream(bufferedInputStream);
     }
 
+    /**
+     * Override to make use of the ZipArchive#createArchiveOutputStream(Path path) method
+     * instead of the method ZipArchive#createArchiveOutputStream(BufferedOutputStream bufferedOutputStream).
+     */
     @Override
     public Path compress(Path... paths) throws IOException {
         Path compress = null;
@@ -137,6 +133,29 @@ public class ZipArchive extends AbstractArchive implements Archive {
         return compress;
     }
 
+    /**
+     * Override to make use of the ArchiveOutputStream#write method instead of the IOUtils#copy method.
+     * IOUtils#copy causes java.io.IOException: "This archives contains unclosed entries"
+     * in the method ZipArchiveOutputStream#finish for ZipArchiveOutputStream
+     */
+    @Override
+    protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
+        final long size = size(file);
+        final byte[] content = new byte[(int) size];
+        final String relativePath = root.relativize(file).toString();
+
+        logger.debug("writting " + relativePath + " path in the archive output stream");
+
+        ArchiveEntry entry = createArchiveEntry(relativePath, size, content);
+        archiveOutputStream.putArchiveEntry(entry);
+        archiveOutputStream.write(content);
+        archiveOutputStream.closeArchiveEntry();
+    }
+
+    /**
+     * Override to make use of the ZipFile class instead of the ZipArchiveInputStream class.
+     * https://commons.apache.org/proper/commons-compress/zip.html
+     */
     @Override
     public Path decompress(Path path) throws IOException {
         Path decompressDir = removeExtension(path);

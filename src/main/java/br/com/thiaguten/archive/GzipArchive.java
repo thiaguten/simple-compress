@@ -50,9 +50,9 @@ public class GzipArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveEntry createArchiveEntry(String targetPath, long targetSize, byte[] targetBytes) {
-        TarArchiveEntry targzEntry = new TarArchiveEntry(targetPath);
-        targzEntry.setSize(targetSize);
+    protected ArchiveEntry createArchiveEntry(String path, long size, byte[] content) {
+        TarArchiveEntry targzEntry = new TarArchiveEntry(path);
+        targzEntry.setSize(size);
         return targzEntry;
     }
 

@@ -22,7 +22,6 @@ package br.com.thiaguten.archive;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveInputStream;
 import org.apache.commons.compress.archivers.ArchiveOutputStream;
-import org.apache.commons.compress.utils.IOUtils;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,15 +29,11 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
-import static java.nio.file.Files.*;
+import static br.com.thiaguten.archive.utils.FileUtils.deleteNotEmptyFolder;
+import static java.nio.file.Files.exists;
 import static org.junit.Assert.*;
 
 public class ArchiveTest {
@@ -94,7 +89,8 @@ public class ArchiveTest {
 
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
-        deleteFolder(decompress, true);
+//        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
+        deleteNotEmptyFolder(decompress);
     }
 
     private void compressAndDecompressDirectory(ArchiveType type) throws IOException {
@@ -119,35 +115,7 @@ public class ArchiveTest {
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
 //        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
-        deleteFolder(decompress, true);
-    }
-
-    private void deleteFolder(Path path, boolean bypassNotEmptyDirectory) throws IOException {
-        if (isDirectory(path)) {
-            if (bypassNotEmptyDirectory) {
-                List<Path> children = listChildren(path);
-                for (Path child : children) {
-                    if (isDirectory(child)) {
-                        deleteFolder(child, bypassNotEmptyDirectory);
-                    } else {
-                        deleteIfExists(child);
-                    }
-                }
-            }
-            deleteIfExists(path);
-        }
-    }
-
-    private List<Path> listChildren(Path path) throws IOException {
-        List<Path> children = new ArrayList<>();
-        if (isDirectory(path)) {
-            try (DirectoryStream<Path> childrenStream = newDirectoryStream(path)) {
-                for (Path child : childrenStream) {
-                    children.add(child);
-                }
-            }
-        }
-        return Collections.unmodifiableList(children);
+        deleteNotEmptyFolder(decompress);
     }
 
     class ZipArchive2 extends AbstractArchive implements Archive {
@@ -181,21 +149,7 @@ public class ArchiveTest {
 
         @Override
         protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
-//            try (InputStream inputStream = newInputStream(file)) {
-                final long size = size(file);
-                final byte[] content = new byte[(int) size];
-                final String relativePath = root.relativize(file).toString();
-
-                logger.debug("writting " + relativePath + " path in the archive output stream");
-
-                ArchiveEntry entry = createArchiveEntry(relativePath, size, content);
-                archiveOutputStream.putArchiveEntry(entry);
-                // For ZipArchive... this line causes java.io.IOException:
-                // "This archives contains unclosed entries" in the method ZipArchiveOutputStream#finish
-//                IOUtils.copy(inputStream, archiveOutputStream);
-                archiveOutputStream.write(content);
-                archiveOutputStream.closeArchiveEntry();
-//            }
+            zipArchive.compressFile(root, file, archiveOutputStream);
         }
     }
 

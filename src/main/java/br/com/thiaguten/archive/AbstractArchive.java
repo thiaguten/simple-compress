@@ -27,14 +27,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static br.com.thiaguten.archive.utils.FileUtils.listChildren;
+import static br.com.thiaguten.archive.utils.FileUtils.removeExtension;
 import static java.nio.file.Files.*;
 
 /**
@@ -50,11 +49,11 @@ public abstract class AbstractArchive implements Archive {
 
     private AtomicInteger count = new AtomicInteger(1);
 
+    protected abstract ArchiveEntry createArchiveEntry(String path, long size, byte[] content);
+
     protected abstract ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException;
 
     protected abstract ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) throws IOException;
-
-    protected abstract ArchiveEntry createArchiveEntry(String path, long size, byte[] content);
 
     /**
      * Archive actions
@@ -211,7 +210,7 @@ public abstract class AbstractArchive implements Archive {
     }
 
     protected void compressDirectory(Path root, Path dir, ArchiveOutputStream archiveOutputStream) throws IOException {
-        List<Path> children = listChildrens(dir);
+        List<Path> children = listChildren(dir);
         for (Path child : children) {
             if (isDirectory(child)) {
                 compressDirectory(root, child, archiveOutputStream);
@@ -219,29 +218,6 @@ public abstract class AbstractArchive implements Archive {
                 compressFile(root, child, archiveOutputStream);
             }
         }
-    }
-
-    protected Path removeExtension(Path file) {
-        if (!isDirectory(file)) {
-            String absPath = file.toAbsolutePath().toString();
-            int index = absPath.lastIndexOf('.');
-            if (index > 0) {
-                file = Paths.get(absPath.substring(0, index));
-            }
-        }
-        return file;
-    }
-
-    private List<Path> listChildrens(Path path) throws IOException {
-        List<Path> childrens = new ArrayList<>();
-        if (isDirectory(path)) {
-            try (DirectoryStream<Path> directoryStream = newDirectoryStream(path)) {
-                for (Path child : directoryStream) {
-                    childrens.add(child);
-                }
-            }
-        }
-        return Collections.unmodifiableList(childrens);
     }
 
 }
