@@ -27,12 +27,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static br.com.thiaguten.archive.support.FileUtils.*;
+import static java.nio.file.Files.*;
 
 /**
  * Abstract Archive defines some archive behaviors and this class has some
@@ -54,9 +58,11 @@ public abstract class AbstractArchive implements Archive {
     protected abstract ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) throws IOException;
 
     /**
-     * Archive actions
+     * Archive action
+     *
+     * @author Thiago Gutenberg Carvalho da Costa
      */
-    public enum ArchiverAction {
+    public enum ArchiveAction {
         COMPRESS, DECOMPRESS
     }
 
@@ -87,7 +93,7 @@ public abstract class AbstractArchive implements Archive {
                 compress = Paths.get(parent.toString(), compressName + getExtension());
                 // creates a new compress file to not override if already exists
                 // if you do not want this behavior, just comment this line
-                compress = createFile(ArchiverAction.COMPRESS, parent, compress);
+                compress = createFile(ArchiveAction.COMPRESS, parent, compress);
 
                 // open compress file stream
                 outputStream = newOutputStream(compress);
@@ -107,10 +113,18 @@ public abstract class AbstractArchive implements Archive {
         }
 
         // closing streams
-        archiveOutputStream.finish();
-        archiveOutputStream.close();
-        bufferedOutputStream.close();
-        outputStream.close();
+        if (archiveOutputStream != null) {
+            archiveOutputStream.finish();
+            archiveOutputStream.close();
+        }
+
+        if (bufferedOutputStream != null) {
+            bufferedOutputStream.close();
+        }
+
+        if (outputStream != null) {
+            outputStream.close();
+        }
 
         logger.debug("finishing the archive file: " + compress);
 
@@ -130,7 +144,7 @@ public abstract class AbstractArchive implements Archive {
 
             // creates a new decompress folder to not override if already exists
             // if you do not want this behavior, just comment this line
-            decompressDir = createFile(ArchiverAction.DECOMPRESS, decompressDir.getParent(), decompressDir);
+            decompressDir = createFile(ArchiveAction.DECOMPRESS, decompressDir.getParent(), decompressDir);
 
             createDirectories(decompressDir);
 
@@ -170,14 +184,14 @@ public abstract class AbstractArchive implements Archive {
         return decompressDir;
     }
 
-    protected Path createFile(ArchiverAction archiverAction, Path parent, Path path) {
+    protected Path createFile(ArchiveAction archiveAction, Path parent, Path path) {
         Path archiveFile = path;
         if (exists(archiveFile)) {
             String archiveName = getName() + count.getAndIncrement();
-            if (ArchiverAction.COMPRESS.equals(archiverAction)) {
+            if (ArchiveAction.COMPRESS.equals(archiveAction)) {
                 archiveName += getExtension();
             }
-            archiveFile = createFile(archiverAction, parent, Paths.get(parent.toString(), archiveName));
+            archiveFile = createFile(archiveAction, parent, Paths.get(parent.toString(), archiveName));
         }
         return archiveFile;
     }
@@ -206,6 +220,28 @@ public abstract class AbstractArchive implements Archive {
                 compressFile(root, child, archiveOutputStream);
             }
         }
+    }
+
+    protected Path removeExtension(Path file) {
+        String str = file.toString();
+        int index = str.lastIndexOf('.');
+        if (index > 0) {
+            file = Paths.get(str.substring(0, index));
+        }
+        return file;
+    }
+
+    private List<Path> listChildren(final Path path) throws IOException {
+        final List<Path> children = new ArrayList<>();
+        if (isDirectory(path)) {
+            try (DirectoryStream<Path> childrenStream = Files.newDirectoryStream(path)) {
+                for (Path child : childrenStream) {
+                    children.add(child);
+                }
+            }
+        }
+        Collections.sort(children);
+        return Collections.unmodifiableList(children);
     }
 
 }

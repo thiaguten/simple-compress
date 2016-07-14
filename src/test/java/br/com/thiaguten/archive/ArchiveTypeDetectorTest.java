@@ -17,7 +17,7 @@
  * limitations under the License.
  * #L%
  */
-package br.com.thiaguten.archive.support;
+package br.com.thiaguten.archive;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,40 +28,40 @@ import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 
-public class TikaFileTypeDetectorTest {
+public class ArchiveTypeDetectorTest {
 
-    private TikaFileTypeDetector tikaFileTypeDetector;
+    private ArchiveTypeDetector archiveTypeDetector;
 
     @Before
     public void setUp() {
-        this.tikaFileTypeDetector = new TikaFileTypeDetector();
+        this.archiveTypeDetector = new ArchiveTypeDetector();
     }
 
     @Test
     public void probeTarContentTypeTest() throws IOException {
         Path tar = Paths.get("src/test/resources/test.tar");
-        String type = tikaFileTypeDetector.probeContentType(tar);
+        String type = archiveTypeDetector.probeContentType(tar);
         assertEquals("application/x-tar", type);
     }
 
     @Test
     public void probeZipContentTypeTest() throws IOException {
         Path zip = Paths.get("src/test/resources/test.zip");
-        String type = tikaFileTypeDetector.probeContentType(zip);
+        String type = archiveTypeDetector.probeContentType(zip);
         assertEquals("application/zip", type);
     }
 
     @Test
     public void probeGzipContentTypeTest() throws IOException {
         Path gzip = Paths.get("src/test/resources/test.tgz");
-        String type = tikaFileTypeDetector.probeContentType(gzip);
+        String type = archiveTypeDetector.probeContentType(gzip);
         assertEquals("application/gzip", type);
     }
 
     @Test
     public void probeDirectoryContentTypeTest() throws IOException {
         Path dir = Paths.get("src/test/resources/test.tar").getParent();
-        String type = tikaFileTypeDetector.probeContentType(dir);
+        String type = archiveTypeDetector.probeContentType(dir);
         assertEquals("text/directory", type);
     }
 

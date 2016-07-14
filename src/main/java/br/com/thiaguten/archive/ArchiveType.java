@@ -24,7 +24,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 
-import static br.com.thiaguten.archive.support.FileUtils.probeContentType;
+import static java.nio.file.Files.probeContentType;
 
 /**
  * Archive Supported Types.

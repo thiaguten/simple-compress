@@ -33,7 +33,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 
-import static br.com.thiaguten.archive.support.FileUtils.*;
+import static java.nio.file.Files.*;
 
 /**
  * Zip Archive Implementation.
@@ -96,7 +96,7 @@ public class ZipArchive extends AbstractArchive implements Archive {
                 compress = Paths.get(parent.toString(), compressName + getExtension());
                 // creates a new compress file to not override if already exists
                 // if you do not want this behavior, just comment this line
-                compress = createFile(ArchiverAction.COMPRESS, parent, compress);
+                compress = createFile(ArchiveAction.COMPRESS, parent, compress);
 
                 // open compress file stream
                 archiveOutputStream = createArchiveOutputStream(compress);
@@ -114,8 +114,10 @@ public class ZipArchive extends AbstractArchive implements Archive {
         }
 
         // closing streams
-        archiveOutputStream.finish();
-        archiveOutputStream.close();
+        if (archiveOutputStream != null) {
+            archiveOutputStream.finish();
+            archiveOutputStream.close();
+        }
 
         logger.debug("finishing the archive file " + compress);
 
@@ -136,7 +138,7 @@ public class ZipArchive extends AbstractArchive implements Archive {
 
             // creates a new decompress folder to not override if already exists
             // if you do not want this behavior, just comment this line
-            decompressDir = createFile(ArchiverAction.DECOMPRESS, decompressDir.getParent(), decompressDir);
+            decompressDir = createFile(ArchiveAction.DECOMPRESS, decompressDir.getParent(), decompressDir);
 
             createDirectories(decompressDir);
 

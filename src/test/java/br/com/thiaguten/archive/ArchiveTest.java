@@ -29,14 +29,17 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
-import static br.com.thiaguten.archive.support.FileUtils.deleteNotEmptyDirectory;
-import static br.com.thiaguten.archive.support.FileUtils.exists;
+import static java.nio.file.Files.exists;
+import static java.nio.file.Files.isDirectory;
 import static org.junit.Assert.*;
-
-//import static java.nio.file.Files.exists;
 
 public class ArchiveTest {
 
@@ -153,6 +156,41 @@ public class ArchiveTest {
         protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
             zipArchive.compressFile(root, file, archiveOutputStream);
         }
+    }
+
+    private void deleteDirectory(final Path dir) throws IOException {
+        deleteDirectory(dir, false);
+    }
+
+    private void deleteNotEmptyDirectory(final Path dir) throws IOException {
+        deleteDirectory(dir, true);
+    }
+
+    private void deleteDirectory(final Path path, final boolean bypassNotEmptyDirectory) throws IOException {
+        if (bypassNotEmptyDirectory) {
+            List<Path> children = listChildren(path);
+            for (Path child : children) {
+                if (isDirectory(child)) {
+                    deleteDirectory(child, bypassNotEmptyDirectory);
+                } else {
+                    Files.deleteIfExists(child);
+                }
+            }
+        }
+        Files.deleteIfExists(path);
+    }
+
+    private List<Path> listChildren(final Path path) throws IOException {
+        final List<Path> children = new ArrayList<>();
+        if (isDirectory(path)) {
+            try (DirectoryStream<Path> childrenStream = Files.newDirectoryStream(path)) {
+                for (Path child : childrenStream) {
+                    children.add(child);
+                }
+            }
+        }
+        Collections.sort(children);
+        return Collections.unmodifiableList(children);
     }
 
 }
