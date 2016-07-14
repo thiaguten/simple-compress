@@ -32,9 +32,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static br.com.thiaguten.archive.utils.FileUtils.deleteNotEmptyFolder;
-import static java.nio.file.Files.exists;
+import static br.com.thiaguten.archive.support.FileUtils.deleteNotEmptyDirectory;
+import static br.com.thiaguten.archive.support.FileUtils.exists;
 import static org.junit.Assert.*;
+
+//import static java.nio.file.Files.exists;
 
 public class ArchiveTest {
 
@@ -90,7 +92,7 @@ public class ArchiveTest {
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
 //        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
-        deleteNotEmptyFolder(decompress);
+        deleteNotEmptyDirectory(decompress);
     }
 
     private void compressAndDecompressDirectory(ArchiveType type) throws IOException {
@@ -115,7 +117,7 @@ public class ArchiveTest {
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
 //        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
-        deleteNotEmptyFolder(decompress);
+        deleteNotEmptyDirectory(decompress);
     }
 
     class ZipArchive2 extends AbstractArchive implements Archive {

@@ -86,19 +86,19 @@ public class ArchiveTypeTest {
     @Test
     public void ofMimetypeTarTest() {
         ArchiveType type = ArchiveType.of("application/x-tar");
-        assertEquals(type, ArchiveType.TAR);
+        assertEquals(ArchiveType.TAR, type);
     }
 
     @Test
     public void ofMimetypeZipTest() {
         ArchiveType type = ArchiveType.of("application/zip");
-        assertEquals(type, ArchiveType.ZIP);
+        assertEquals(ArchiveType.ZIP, type);
     }
 
     @Test
     public void ofMimetypeGzipTest() {
         ArchiveType type = ArchiveType.of("application/gzip");
-        assertEquals(type, ArchiveType.GZIP);
+        assertEquals(ArchiveType.GZIP, type);
     }
 
     @Test(expected = RuntimeException.class)
@@ -109,19 +109,19 @@ public class ArchiveTypeTest {
     @Test
     public void ofPathTarTest() throws IOException {
         ArchiveType type = ArchiveType.of(Paths.get("src/test/resources/test.tar"));
-        assertEquals(type, ArchiveType.TAR);
+        assertEquals(ArchiveType.TAR, type);
     }
 
     @Test
     public void ofPathZipTest() throws IOException {
         ArchiveType type = ArchiveType.of(Paths.get("src/test/resources/test.zip"));
-        assertEquals(type, ArchiveType.ZIP);
+        assertEquals(ArchiveType.ZIP, type);
     }
 
     @Test
     public void ofPathGzipTest() throws IOException {
         ArchiveType type = ArchiveType.of(Paths.get("src/test/resources/test.tgz"));
-        assertEquals(type, ArchiveType.GZIP);
+        assertEquals(ArchiveType.GZIP, type);
     }
 
 }

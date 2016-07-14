@@ -17,22 +17,26 @@
  * limitations under the License.
  * #L%
  */
-package br.com.thiaguten.archive;
+package br.com.thiaguten.archive.support;
 
 import org.apache.tika.Tika;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.spi.FileTypeDetector;
 
-public class ArchiveDetector extends FileTypeDetector {
+/**
+ * Tika file type detector implementation to probe the file content type.
+ *
+ * @author Thiago Gutenberg Carvalho da Costa
+ */
+public class TikaFileTypeDetector extends FileTypeDetector {
 
     private Tika tika = new Tika();
 
     @Override
     public String probeContentType(Path path) throws IOException {
-        if (Files.isDirectory(path)) {
+        if (FileUtils.isDirectory(path)) {
             return "text/directory";
         }
         return tika.detect(path);

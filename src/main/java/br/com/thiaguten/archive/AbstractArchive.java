@@ -32,9 +32,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static br.com.thiaguten.archive.utils.FileUtils.listChildren;
-import static br.com.thiaguten.archive.utils.FileUtils.removeExtension;
-import static java.nio.file.Files.*;
+import static br.com.thiaguten.archive.support.FileUtils.*;
 
 /**
  * Abstract Archive defines some archive behaviors and this class has some
@@ -73,61 +71,48 @@ public abstract class AbstractArchive implements Archive {
     @Override
     public Path compress(Path... paths) throws IOException {
         Path compress = null;
-
         OutputStream outputStream = null;
         BufferedOutputStream bufferedOutputStream = null;
         ArchiveOutputStream archiveOutputStream = null;
 
-        try {
-            for (Path path : paths) {
-                // get path infos
-                final Path parent = path.getParent();
-                final String name = path.getFileName().toString();
-                final boolean isDirectory = isDirectory(path);
+        for (Path path : paths) {
+            // get path infos
+            final Path parent = path.getParent();
+            final String name = path.getFileName().toString();
+            final boolean isDirectory = isDirectory(path);
 
-                if (compress == null) {
-                    // create compress file
-                    String compressName = (paths.length == 1 ? name : getName());
-                    compress = Paths.get(parent.toString(), compressName + getExtension());
-                    // creates a new compress file to not override if already exists
-                    // if you do not want this behavior, just comment this line
-                    compress = createFile(ArchiverAction.COMPRESS, parent, compress);
+            if (compress == null) {
+                // create compress file
+                String compressName = (paths.length == 1 ? name : getName());
+                compress = Paths.get(parent.toString(), compressName + getExtension());
+                // creates a new compress file to not override if already exists
+                // if you do not want this behavior, just comment this line
+                compress = createFile(ArchiverAction.COMPRESS, parent, compress);
 
-                    // open compress file stream
-                    outputStream = newOutputStream(compress);
-                    bufferedOutputStream = new BufferedOutputStream(outputStream);
-                    archiveOutputStream = createArchiveOutputStream(bufferedOutputStream);
+                // open compress file stream
+                outputStream = newOutputStream(compress);
+                bufferedOutputStream = new BufferedOutputStream(outputStream);
+                archiveOutputStream = createArchiveOutputStream(bufferedOutputStream);
 
-                    logger.debug("creating the archive file " + compressName);
-                }
-
-                logger.debug("reading path " + path);
-
-                if (isDirectory) {
-                    compressDirectory(parent, path, archiveOutputStream);
-                } else {
-                    compressFile(parent, path, archiveOutputStream);
-                }
+                logger.debug("creating the archive file " + compressName);
             }
 
-            logger.debug("finishing the archive file: " + compress);
+            logger.debug("reading path " + path);
 
-        } catch (IOException e) {
-            logger.error("compress error", e);
-            throw e;
-        } finally {
-            // close streams
-            if (archiveOutputStream != null) {
-                archiveOutputStream.finish();
-                archiveOutputStream.close();
-            }
-            if (bufferedOutputStream != null) {
-                bufferedOutputStream.close();
-            }
-            if (outputStream != null) {
-                outputStream.close();
+            if (isDirectory) {
+                compressDirectory(parent, path, archiveOutputStream);
+            } else {
+                compressFile(parent, path, archiveOutputStream);
             }
         }
+
+        // closing streams
+        archiveOutputStream.finish();
+        archiveOutputStream.close();
+        bufferedOutputStream.close();
+        outputStream.close();
+
+        logger.debug("finishing the archive file: " + compress);
 
         return compress;
     }
@@ -180,9 +165,6 @@ public abstract class AbstractArchive implements Archive {
 
             logger.debug("finishing the decompress in the directory: " + decompressDir);
 
-        } catch (IOException e) {
-            logger.error("decompress error", e);
-            throw e;
         }
 
         return decompressDir;

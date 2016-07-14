@@ -29,12 +29,11 @@ import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
 
-import static br.com.thiaguten.archive.utils.FileUtils.removeExtension;
+import static br.com.thiaguten.archive.support.FileUtils.*;
 
 /**
  * Zip Archive Implementation.
@@ -85,48 +84,40 @@ public class ZipArchive extends AbstractArchive implements Archive {
         Path compress = null;
         ArchiveOutputStream archiveOutputStream = null;
 
-        try {
-            for (Path path : paths) {
-                // get path infos
-                final Path parent = path.getParent();
-                final String name = path.getFileName().toString();
-                final boolean isDirectory = Files.isDirectory(path);
+        for (Path path : paths) {
+            // get path infos
+            final Path parent = path.getParent();
+            final String name = path.getFileName().toString();
+            final boolean isDirectory = isDirectory(path);
 
-                if (compress == null) {
-                    // create compress file
-                    String compressName = (paths.length == 1 ? name : getName());
-                    compress = Paths.get(parent.toString(), compressName + getExtension());
-                    // creates a new compress file to not override if already exists
-                    // if you do not want this behavior, just comment this line
-                    compress = createFile(ArchiverAction.COMPRESS, parent, compress);
+            if (compress == null) {
+                // create compress file
+                String compressName = (paths.length == 1 ? name : getName());
+                compress = Paths.get(parent.toString(), compressName + getExtension());
+                // creates a new compress file to not override if already exists
+                // if you do not want this behavior, just comment this line
+                compress = createFile(ArchiverAction.COMPRESS, parent, compress);
 
-                    // open compress file stream
-                    archiveOutputStream = createArchiveOutputStream(compress);
+                // open compress file stream
+                archiveOutputStream = createArchiveOutputStream(compress);
 
-                    logger.debug("creating the archive file " + compressName);
-                }
-
-                logger.debug("reading path " + path);
-
-                if (isDirectory) {
-                    compressDirectory(parent, path, archiveOutputStream);
-                } else {
-                    compressFile(parent, path, archiveOutputStream);
-                }
+                logger.debug("creating the archive file " + compressName);
             }
 
-            logger.debug("finishing the archive file " + compress);
+            logger.debug("reading path " + path);
 
-        } catch (IOException e) {
-            logger.error("compress error", e);
-            throw e;
-        } finally {
-            // close streams
-            if (archiveOutputStream != null) {
-                archiveOutputStream.finish();
-                archiveOutputStream.close();
+            if (isDirectory) {
+                compressDirectory(parent, path, archiveOutputStream);
+            } else {
+                compressFile(parent, path, archiveOutputStream);
             }
         }
+
+        // closing streams
+        archiveOutputStream.finish();
+        archiveOutputStream.close();
+
+        logger.debug("finishing the archive file " + compress);
 
         return compress;
     }
@@ -141,13 +132,13 @@ public class ZipArchive extends AbstractArchive implements Archive {
 
         logger.debug("reading archive file " + path);
 
-        try (ZipFile zipFile = new ZipFile(path.toAbsolutePath().toString())) {
+        try (ZipFile zipFile = new ZipFile(path.toString())) {
 
             // creates a new decompress folder to not override if already exists
             // if you do not want this behavior, just comment this line
             decompressDir = createFile(ArchiverAction.DECOMPRESS, decompressDir.getParent(), decompressDir);
 
-            Files.createDirectories(decompressDir);
+            createDirectories(decompressDir);
 
             logger.debug("creating the decompress destination directory " + decompressDir);
 
@@ -161,14 +152,14 @@ public class ZipArchive extends AbstractArchive implements Archive {
                     final Path target = Paths.get(decompressDir.toString(), entryName);
                     final Path parent = target.getParent();
 
-                    if (parent != null && !Files.exists(parent)) {
-                        Files.createDirectories(parent);
+                    if (parent != null && !exists(parent)) {
+                        createDirectories(parent);
                     }
 
                     logger.debug("reading compressed path " + entryName);
 
                     if (!zipArchiveEntry.isDirectory()) {
-                        try (OutputStream outputStream = new BufferedOutputStream(Files.newOutputStream(target))) {
+                        try (OutputStream outputStream = new BufferedOutputStream(newOutputStream(target))) {
 
                             logger.debug("writting compressed " + entryName + " file in the decompress directory");
 
@@ -182,9 +173,6 @@ public class ZipArchive extends AbstractArchive implements Archive {
 
             logger.debug("finishing the decompress in the directory: " + decompressDir);
 
-        } catch (IOException e) {
-            logger.error("decompress error", e);
-            throw e;
         }
 
         return decompressDir;

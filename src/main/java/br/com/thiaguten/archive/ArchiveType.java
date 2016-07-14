@@ -20,10 +20,11 @@
 package br.com.thiaguten.archive;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
+
+import static br.com.thiaguten.archive.support.FileUtils.probeContentType;
 
 /**
  * Archive Supported Types.
@@ -62,10 +63,7 @@ public enum ArchiveType {
     // convenient
 
     public static ArchiveType of(Path path) throws IOException {
-        // An implementation using "Java Service Provider Interface (SPI)" is
-        // registered in /META-INF/services/java.nio.file.spi.FileTypeDetector,
-        // improving the standard default NIO implementation with the Apache Tika API.
-        return of(Files.probeContentType(path));
+        return of(probeContentType(path));
     }
 
     public static ArchiveType of(String mimeType) {
