@@ -158,10 +158,6 @@ public class ArchiveTest {
         }
     }
 
-    private void deleteDirectory(final Path dir) throws IOException {
-        deleteDirectory(dir, false);
-    }
-
     private void deleteNotEmptyDirectory(final Path dir) throws IOException {
         deleteDirectory(dir, true);
     }
