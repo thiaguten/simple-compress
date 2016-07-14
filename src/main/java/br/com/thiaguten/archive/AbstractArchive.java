@@ -112,6 +112,9 @@ public abstract class AbstractArchive implements Archive {
 
             logger.debug("finishing the archive file: " + compress);
 
+        } catch (IOException e) {
+            logger.error("compress error", e);
+            throw e;
         } finally {
             // close streams
             if (archiveOutputStream != null) {
@@ -177,6 +180,9 @@ public abstract class AbstractArchive implements Archive {
 
             logger.debug("finishing the decompress in the directory: " + decompressDir);
 
+        } catch (IOException e) {
+            logger.error("decompress error", e);
+            throw e;
         }
 
         return decompressDir;

@@ -33,11 +33,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
-import java.util.zip.ZipEntry;
 
-import static br.com.thiaguten.archive.utils.CRC32Utils.crc32Checksum;
 import static br.com.thiaguten.archive.utils.FileUtils.removeExtension;
-import static java.nio.file.Files.size;
 
 /**
  * Zip Archive Implementation.
@@ -60,8 +57,6 @@ public class ZipArchive extends AbstractArchive implements Archive {
     protected ArchiveEntry createArchiveEntry(String path, long size, byte[] content) {
         ZipArchiveEntry zipEntry = new ZipArchiveEntry(path);
         zipEntry.setSize(size);
-        zipEntry.setMethod(ZipEntry.STORED);
-        zipEntry.setCrc(crc32Checksum(content));
         return zipEntry;
     }
 
@@ -122,6 +117,9 @@ public class ZipArchive extends AbstractArchive implements Archive {
 
             logger.debug("finishing the archive file " + compress);
 
+        } catch (IOException e) {
+            logger.error("compress error", e);
+            throw e;
         } finally {
             // close streams
             if (archiveOutputStream != null) {
@@ -131,25 +129,6 @@ public class ZipArchive extends AbstractArchive implements Archive {
         }
 
         return compress;
-    }
-
-    /**
-     * Override to make use of the ArchiveOutputStream#write method instead of the IOUtils#copy method.
-     * IOUtils#copy causes java.io.IOException: "This archives contains unclosed entries"
-     * in the method ZipArchiveOutputStream#finish for ZipArchiveOutputStream
-     */
-    @Override
-    protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
-        final long size = size(file);
-        final byte[] content = new byte[(int) size];
-        final String relativePath = root.relativize(file).toString();
-
-        logger.debug("writting " + relativePath + " path in the archive output stream");
-
-        ArchiveEntry entry = createArchiveEntry(relativePath, size, content);
-        archiveOutputStream.putArchiveEntry(entry);
-        archiveOutputStream.write(content);
-        archiveOutputStream.closeArchiveEntry();
     }
 
     /**
@@ -203,6 +182,9 @@ public class ZipArchive extends AbstractArchive implements Archive {
 
             logger.debug("finishing the decompress in the directory: " + decompressDir);
 
+        } catch (IOException e) {
+            logger.error("decompress error", e);
+            throw e;
         }
 
         return decompressDir;
