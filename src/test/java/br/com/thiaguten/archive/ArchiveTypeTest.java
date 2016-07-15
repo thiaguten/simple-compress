@@ -125,6 +125,13 @@ public class ArchiveTypeTest {
     }
 
     @Test
+    public void getArchiveTypeName() {
+        assertEquals("ZipArchive", ArchiveType.ZIP.getName());
+        assertEquals("TarArchive", ArchiveType.TAR.getName());
+        assertEquals("GzipArchive", ArchiveType.GZIP.getName());
+    }
+
+    @Test
     public void archiveTypeEnumTest() {
         assertEquals("TAR", ArchiveType.TAR.name());
         assertEquals("ZIP", ArchiveType.ZIP.name());

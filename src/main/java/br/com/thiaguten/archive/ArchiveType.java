@@ -77,6 +77,10 @@ public enum ArchiveType {
 
     // shortcuts
 
+    public String getName() {
+        return getStrategy().getName();
+    }
+
     public String getMimeType() {
         return getStrategy().getMimeType();
     }
