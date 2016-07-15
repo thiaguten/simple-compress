@@ -28,9 +28,9 @@ import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorInputStream;
 import org.apache.commons.compress.compressors.gzip.GzipCompressorOutputStream;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Gzip Archive Implementation.
@@ -57,13 +57,13 @@ public class GzipArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) throws IOException {
-        return new TarArchiveOutputStream(new GzipCompressorOutputStream(bufferedOutputStream));
+    protected ArchiveOutputStream createArchiveOutputStream(OutputStream outputStream) throws IOException {
+        return new TarArchiveOutputStream(new GzipCompressorOutputStream(outputStream));
     }
 
     @Override
-    protected ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException {
-        return new TarArchiveInputStream(new GzipCompressorInputStream(bufferedInputStream));
+    protected ArchiveInputStream createArchiveInputStream(InputStream inputStream) throws IOException {
+        return new TarArchiveInputStream(new GzipCompressorInputStream(inputStream));
     }
 
 }

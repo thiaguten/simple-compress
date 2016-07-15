@@ -26,9 +26,9 @@ import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
 /**
  * Tar Archive Implementation.
@@ -55,13 +55,13 @@ public class TarArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) throws IOException {
-        return new TarArchiveOutputStream(bufferedOutputStream);
+    protected ArchiveOutputStream createArchiveOutputStream(OutputStream outputStream) throws IOException {
+        return new TarArchiveOutputStream(outputStream);
     }
 
     @Override
-    protected ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException {
-        return new TarArchiveInputStream(bufferedInputStream);
+    protected ArchiveInputStream createArchiveInputStream(InputStream inputStream) throws IOException {
+        return new TarArchiveInputStream(inputStream);
     }
 
 }

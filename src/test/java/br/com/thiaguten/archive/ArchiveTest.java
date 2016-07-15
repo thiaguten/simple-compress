@@ -26,9 +26,9 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -143,19 +143,15 @@ public class ArchiveTest {
         }
 
         @Override
-        protected ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) {
-            return zipArchive.createArchiveOutputStream(bufferedOutputStream);
+        protected ArchiveOutputStream createArchiveOutputStream(OutputStream outputStream) {
+            return zipArchive.createArchiveOutputStream(outputStream);
         }
 
         @Override
-        protected ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException {
-            return zipArchive.createArchiveInputStream(bufferedInputStream);
+        protected ArchiveInputStream createArchiveInputStream(InputStream inputStream) throws IOException {
+            return zipArchive.createArchiveInputStream(inputStream);
         }
 
-        @Override
-        protected void compressFile(Path root, Path file, ArchiveOutputStream archiveOutputStream) throws IOException {
-            zipArchive.compressFile(root, file, archiveOutputStream);
-        }
     }
 
     private void deleteNotEmptyDirectory(final Path dir) throws IOException {

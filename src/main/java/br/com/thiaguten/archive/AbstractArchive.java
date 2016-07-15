@@ -28,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -53,9 +52,9 @@ public abstract class AbstractArchive implements Archive {
 
     protected abstract ArchiveEntry createArchiveEntry(String path, long size, byte[] content);
 
-    protected abstract ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException;
+    protected abstract ArchiveInputStream createArchiveInputStream(InputStream inputStream) throws IOException;
 
-    protected abstract ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) throws IOException;
+    protected abstract ArchiveOutputStream createArchiveOutputStream(OutputStream outputStream) throws IOException;
 
     /**
      * Archive action
@@ -77,8 +76,6 @@ public abstract class AbstractArchive implements Archive {
     @Override
     public Path compress(Path... paths) throws IOException {
         Path compress = null;
-        OutputStream outputStream = null;
-        BufferedOutputStream bufferedOutputStream = null;
         ArchiveOutputStream archiveOutputStream = null;
 
         for (Path path : paths) {
@@ -91,14 +88,13 @@ public abstract class AbstractArchive implements Archive {
                 // create compress file
                 String compressName = (paths.length == 1 ? name : getName());
                 compress = Paths.get(parent.toString(), compressName + getExtension());
+
                 // creates a new compress file to not override if already exists
                 // if you do not want this behavior, just comment this line
                 compress = createFile(ArchiveAction.COMPRESS, parent, compress);
 
                 // open compress file stream
-                outputStream = newOutputStream(compress);
-                bufferedOutputStream = new BufferedOutputStream(outputStream);
-                archiveOutputStream = createArchiveOutputStream(bufferedOutputStream);
+                archiveOutputStream = createArchiveOutputStream(new BufferedOutputStream(newOutputStream(compress)));
 
                 logger.debug("creating the archive file " + compressName);
             }
@@ -116,14 +112,6 @@ public abstract class AbstractArchive implements Archive {
         if (archiveOutputStream != null) {
             archiveOutputStream.finish();
             archiveOutputStream.close();
-        }
-
-        if (bufferedOutputStream != null) {
-            bufferedOutputStream.close();
-        }
-
-        if (outputStream != null) {
-            outputStream.close();
         }
 
         logger.debug("finishing the archive file: " + compress);
@@ -234,7 +222,7 @@ public abstract class AbstractArchive implements Archive {
     private List<Path> listChildren(final Path path) throws IOException {
         final List<Path> children = new ArrayList<>();
         if (isDirectory(path)) {
-            try (DirectoryStream<Path> childrenStream = Files.newDirectoryStream(path)) {
+            try (DirectoryStream<Path> childrenStream = newDirectoryStream(path)) {
                 for (Path child : childrenStream) {
                     children.add(child);
                 }

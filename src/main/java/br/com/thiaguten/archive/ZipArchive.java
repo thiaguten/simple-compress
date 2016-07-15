@@ -28,7 +28,10 @@ import org.apache.commons.compress.archivers.zip.ZipArchiveOutputStream;
 import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.utils.IOUtils;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Enumeration;
@@ -60,8 +63,8 @@ public class ZipArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveOutputStream createArchiveOutputStream(BufferedOutputStream bufferedOutputStream) {
-        return new ZipArchiveOutputStream(bufferedOutputStream);
+    protected ArchiveOutputStream createArchiveOutputStream(OutputStream outputStream) {
+        return new ZipArchiveOutputStream(outputStream);
     }
 
     protected ArchiveOutputStream createArchiveOutputStream(Path path) throws IOException {
@@ -71,8 +74,8 @@ public class ZipArchive extends AbstractArchive implements Archive {
     }
 
     @Override
-    protected ArchiveInputStream createArchiveInputStream(BufferedInputStream bufferedInputStream) throws IOException {
-        return new ZipArchiveInputStream(bufferedInputStream);
+    protected ArchiveInputStream createArchiveInputStream(InputStream inputStream) throws IOException {
+        return new ZipArchiveInputStream(inputStream);
     }
 
     /**
@@ -94,6 +97,7 @@ public class ZipArchive extends AbstractArchive implements Archive {
                 // create compress file
                 String compressName = (paths.length == 1 ? name : getName());
                 compress = Paths.get(parent.toString(), compressName + getExtension());
+
                 // creates a new compress file to not override if already exists
                 // if you do not want this behavior, just comment this line
                 compress = createFile(ArchiveAction.COMPRESS, parent, compress);
