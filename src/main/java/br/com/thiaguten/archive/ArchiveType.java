@@ -36,28 +36,28 @@ public enum ArchiveType {
     TAR {
         @Override
         public Archive getStrategy() {
-            return MAP.get(TAR);
+            return HOLDER.get(TAR);
         }
     },
     ZIP {
         @Override
         public Archive getStrategy() {
-            return MAP.get(ZIP);
+            return HOLDER.get(ZIP);
         }
     },
     GZIP {
         @Override
         public Archive getStrategy() {
-            return MAP.get(GZIP);
+            return HOLDER.get(GZIP);
         }
     };
 
-    private static final Map<ArchiveType, Archive> MAP = new HashMap<>();
+    private static final Map<ArchiveType, Archive> HOLDER = new HashMap<>();
 
     static {
-        MAP.put(TAR, new TarArchive());
-        MAP.put(ZIP, new ZipArchive());
-        MAP.put(GZIP, new GzipArchive());
+        HOLDER.put(TAR, new TarArchive());
+        HOLDER.put(ZIP, new ZipArchive());
+        HOLDER.put(GZIP, new GzipArchive());
     }
 
     // convenient

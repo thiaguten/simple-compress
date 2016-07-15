@@ -40,6 +40,11 @@ import java.io.OutputStream;
 public class GzipArchive extends AbstractArchive implements Archive {
 
     @Override
+    public String getName() {
+        return "GzipArchive";
+    }
+
+    @Override
     public String getMimeType() {
         return "application/gzip";
     }

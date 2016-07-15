@@ -34,7 +34,7 @@ import static java.nio.file.Files.isDirectory;
  */
 public class ArchiveTypeDetector extends FileTypeDetector {
 
-    private Tika tika = new Tika();
+    private final Tika tika = new Tika();
 
     @Override
     public String probeContentType(Path path) throws IOException {

@@ -29,16 +29,11 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-import static java.nio.file.Files.exists;
-import static java.nio.file.Files.isDirectory;
+import static java.nio.file.Files.*;
 import static org.junit.Assert.*;
 
 public class ArchiveTest {
@@ -80,8 +75,9 @@ public class ArchiveTest {
         Path path = Paths.get("src/test/resources/data/dir/test.txt");
         Path compress = ArchiveType.ZIP.getStrategy().compress(path);
         Path compress1 = ArchiveType.ZIP.getStrategy().compress(path);
-        compress.toFile().deleteOnExit();
-        compress1.toFile().deleteOnExit();
+
+        deleteIfExists(compress);
+        deleteIfExists(compress1);
     }
 
     @Test
@@ -90,23 +86,54 @@ public class ArchiveTest {
         Path compress = archive.compress(Paths.get("src/test/resources/data/dir/test.txt"));
         assertTrue(exists(compress));
         assertEquals(archive.getMimeType(), ArchiveType.of(compress).getMimeType());
-        compress.toFile().deleteOnExit();
 
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
-//        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
+
+        deleteIfExists(compress);
         deleteNotEmptyDirectory(decompress);
+    }
+
+    @Test
+    public void abstractArchiveRemoveExtensionTest() {
+        assertEquals("src/test/resources/data", AbstractArchive.removeExtension(Paths.get("src/test/resources/data")).toString());
+        assertEquals("src/test/resources/test", AbstractArchive.removeExtension(Paths.get("src/test/resources/test.tar")).toString());
+        assertEquals("src/test/resources/test", AbstractArchive.removeExtension(Paths.get("src/test/resources/test.tgz")).toString());
+        assertEquals("src/test/resources/test", AbstractArchive.removeExtension(Paths.get("src/test/resources/test.zip")).toString());
+        assertEquals("src/test/resources/data/dir/test", AbstractArchive.removeExtension(Paths.get("src/test/resources/data/dir/test.txt")).toString());
+    }
+
+    @Test
+    public void abstractArchiveListChildrenTest() throws IOException {
+        assertEquals(2, AbstractArchive.listChildren(Paths.get("src/test/resources/data")).size());
+        assertEquals(1, AbstractArchive.listChildren(Paths.get("src/test/resources/data/dir")).size());
+        assertEquals(2, AbstractArchive.listChildren(Paths.get("src/test/resources/data/dir2/")).size());
+        assertEquals(1, AbstractArchive.listChildren(Paths.get("src/test/resources/data/dir2/subdir2")).size());
+        assertEquals(0, AbstractArchive.listChildren(Paths.get("src/test/resources/data/dir2/subdir2/text3.txt")).size());
+    }
+
+    @Test
+    public void abstractArchiveArchiveActionEnumTest() {
+        assertEquals("COMPRESS", AbstractArchive.ArchiveAction.COMPRESS.name());
+        assertEquals("DECOMPRESS", AbstractArchive.ArchiveAction.DECOMPRESS.name());
+        assertEquals(0, AbstractArchive.ArchiveAction.COMPRESS.ordinal());
+        assertEquals(1, AbstractArchive.ArchiveAction.DECOMPRESS.ordinal());
+        assertEquals(2, AbstractArchive.ArchiveAction.values().length);
+        assertEquals(AbstractArchive.ArchiveAction.COMPRESS, AbstractArchive.ArchiveAction.valueOf("COMPRESS"));
+        assertEquals(AbstractArchive.ArchiveAction.DECOMPRESS, AbstractArchive.ArchiveAction.valueOf("DECOMPRESS"));
     }
 
     private void compressAndDecompressDirectory(ArchiveType type) throws IOException {
         compressAndDecompress(type, Paths.get("src/test/resources/data"));
+        compressAndDecompress(type, Paths.get("src/test/resources/data/dir"), Paths.get("src/test/resources/data/dir2"));
     }
 
     private void compressAndDecompressFile(ArchiveType type) throws IOException {
         compressAndDecompress(type, Paths.get("src/test/resources/data/dir/test.txt"));
+        compressAndDecompress(type, Paths.get("src/test/resources/data/dir/test.txt"), Paths.get("src/test/resources/data/dir2/test2.txt"));
     }
 
-    private void compressAndDecompress(ArchiveType type, Path path) throws IOException {
+    private void compressAndDecompress(ArchiveType type, Path... path) throws IOException {
         Archive archive = type.getStrategy();
         assertNotNull(archive);
 
@@ -114,18 +141,18 @@ public class ArchiveTest {
         Path compress = archive.compress(path);
         assertTrue(exists(compress));
         assertEquals(type.getMimeType(), ArchiveType.of(compress).getMimeType());
-        compress.toFile().deleteOnExit();
 
         log.info("DECOMPRESS {}", type);
         Path decompress = archive.decompress(compress);
         assertTrue(exists(decompress));
-//        decompress.toFile().deleteOnExit(); // delete on exit do not make recursive deletion
+
+        deleteIfExists(compress);
         deleteNotEmptyDirectory(decompress);
     }
 
-    class ZipArchive2 extends AbstractArchive implements Archive {
+    private class ZipArchive2 extends AbstractArchive implements Archive {
 
-        private ZipArchive zipArchive = new ZipArchive();
+        private final ZipArchive zipArchive = new ZipArchive();
 
         @Override
         public String getMimeType() {
@@ -154,35 +181,16 @@ public class ArchiveTest {
 
     }
 
-    private void deleteNotEmptyDirectory(final Path dir) throws IOException {
-        deleteDirectory(dir, true);
-    }
-
-    private void deleteDirectory(final Path path, final boolean bypassNotEmptyDirectory) throws IOException {
-        if (bypassNotEmptyDirectory) {
-            List<Path> children = listChildren(path);
-            for (Path child : children) {
-                if (isDirectory(child)) {
-                    deleteDirectory(child, bypassNotEmptyDirectory);
-                } else {
-                    Files.deleteIfExists(child);
-                }
+    private static void deleteNotEmptyDirectory(final Path dir) throws IOException {
+        List<Path> children = AbstractArchive.listChildren(dir);
+        for (Path child : children) {
+            if (isDirectory(child)) {
+                deleteNotEmptyDirectory(child);
+            } else {
+                deleteIfExists(child);
             }
         }
-        Files.deleteIfExists(path);
-    }
-
-    private List<Path> listChildren(final Path path) throws IOException {
-        final List<Path> children = new ArrayList<>();
-        if (isDirectory(path)) {
-            try (DirectoryStream<Path> childrenStream = Files.newDirectoryStream(path)) {
-                for (Path child : childrenStream) {
-                    children.add(child);
-                }
-            }
-        }
-        Collections.sort(children);
-        return Collections.unmodifiableList(children);
+        deleteIfExists(dir);
     }
 
 }

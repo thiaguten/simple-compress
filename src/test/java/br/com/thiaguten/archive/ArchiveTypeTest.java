@@ -124,4 +124,18 @@ public class ArchiveTypeTest {
         assertEquals(ArchiveType.GZIP, type);
     }
 
+    @Test
+    public void archiveTypeEnumTest() {
+        assertEquals("TAR", ArchiveType.TAR.name());
+        assertEquals("ZIP", ArchiveType.ZIP.name());
+        assertEquals("GZIP", ArchiveType.GZIP.name());
+        assertEquals(0, ArchiveType.TAR.ordinal());
+        assertEquals(1, ArchiveType.ZIP.ordinal());
+        assertEquals(2, ArchiveType.GZIP.ordinal());
+        assertEquals(3, ArchiveType.values().length);
+        assertEquals(ArchiveType.TAR, ArchiveType.valueOf("TAR"));
+        assertEquals(ArchiveType.ZIP, ArchiveType.valueOf("ZIP"));
+        assertEquals(ArchiveType.GZIP, ArchiveType.valueOf("GZIP"));
+    }
+
 }

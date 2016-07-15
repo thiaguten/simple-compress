@@ -38,6 +38,11 @@ import java.io.OutputStream;
 public class TarArchive extends AbstractArchive implements Archive {
 
     @Override
+    public String getName() {
+        return "TarArchive";
+    }
+
+    @Override
     public String getMimeType() {
         return "application/x-tar";
     }

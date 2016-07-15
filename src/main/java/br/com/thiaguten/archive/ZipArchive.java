@@ -46,6 +46,11 @@ import static java.nio.file.Files.*;
 public class ZipArchive extends AbstractArchive implements Archive {
 
     @Override
+    public String getName() {
+        return "ZipArchive";
+    }
+
+    @Override
     public String getMimeType() {
         return "application/zip";
     }

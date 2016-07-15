@@ -48,7 +48,7 @@ public abstract class AbstractArchive implements Archive {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private AtomicInteger count = new AtomicInteger(1);
+    private final AtomicInteger count = new AtomicInteger(1);
 
     protected abstract ArchiveEntry createArchiveEntry(String path, long size, byte[] content);
 
@@ -210,7 +210,7 @@ public abstract class AbstractArchive implements Archive {
         }
     }
 
-    protected Path removeExtension(Path file) {
+    public static Path removeExtension(Path file) {
         String str = file.toString();
         int index = str.lastIndexOf('.');
         if (index > 0) {
@@ -219,7 +219,7 @@ public abstract class AbstractArchive implements Archive {
         return file;
     }
 
-    private List<Path> listChildren(final Path path) throws IOException {
+    public static List<Path> listChildren(final Path path) throws IOException {
         final List<Path> children = new ArrayList<>();
         if (isDirectory(path)) {
             try (DirectoryStream<Path> childrenStream = newDirectoryStream(path)) {
@@ -228,7 +228,6 @@ public abstract class AbstractArchive implements Archive {
                 }
             }
         }
-        Collections.sort(children);
         return Collections.unmodifiableList(children);
     }
 
