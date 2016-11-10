@@ -16,3 +16,5 @@ script:
   - mvn test
 notifications:
   email: false
+after_success:
+  - mvn clean test jacoco:report coveralls:report
