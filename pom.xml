@@ -207,8 +207,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <commons-compress.version>1.12</commons-compress.version>
-        <tika.version>1.13</tika.version>
+        <commons-compress.version>[1.18,)</commons-compress.version>
+        <tika.version>[1.22,)</tika.version>
         <slf4j.version>1.7.21</slf4j.version>
         <logback.version>1.1.7</logback.version>
         <junit.version>4.12</junit.version>
